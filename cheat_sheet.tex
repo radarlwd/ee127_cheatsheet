@@ -1,0 +1,167 @@
+\documentclass[9pt,landscape]{article}
+\usepackage{multicol}
+\usepackage{calc}
+\usepackage[landscape]{geometry}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,relsize}
+\usepackage{color,graphicx,overpic}
+\usepackage{enumitem}
+
+% Turn off header and footer
+\pagestyle{empty}
+\geometry{top=.12in,left=.25in,right=.25in,bottom=.12in}
+
+% Redefine section commands to use less space
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{\z@}{2ex}{1ex}
+                       {\normalfont\normalsize\bfseries\textit}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}{2ex}{0.5ex}
+                          {\normalfont\small\bfseries}}
+\makeatother
+
+% Don't print section numbers
+\setcounter{secnumdepth}{0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\input{math_commands.tex}
+
+\newcommand{\ruler}{\\\rule{\columnwidth}{0.25pt}\\}
+\newcommand{\uruler}{\rule{\columnwidth}{0.25pt}\\}
+
+\newcommand{\itemizebegin}{\begin{itemize}[noitemsep,topsep=0pt]}
+\newcommand{\itemizeend}{\end{itemize}}
+
+\newcommand{\enumbegin}{\begin{enumerate}[noitemsep,topsep=0pt]}
+\newcommand{\enumend}{\end{enumerate}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+
+% -----------------------------------------------------------------------
+\begin{document}
+\raggedright
+\footnotesize
+\begin{multicols*}{3}
+% multicol parameters
+% These lengths are set only within the two main columns
+% \setlength{\columnseprule}{0.1pt}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{0pt}
+
+
+
+\section{Unconstrained Optimization Algorithms}
+\textbf{General Ideas}
+\itemizebegin
+\item Select step size $s_k$ and direction $v_k$ such that $f_0(x_k + s_k v_k)$ is substantially smaller
+than $f_0(x_k)$.
+\item $v_k$ is usually selected such that $\nabla f_0(x_k)^\top v_k < 0$
+\item First order descent
+\itemizeend
+\uruler
+\textbf{Armijo backtracking step size rule}
+\enumbegin
+\item Chosse $\alpha, \beta \in (0, 1)$, set $s = 1$
+\item If $f_0(x_k + s v_k) \le f_0(x_k) + s \alpha \nabla f_0(x_k) ^ \top v_k$, then return $s_k = s$.
+\item Set $s = \beta s$ and return to step 2.
+\enumend
+\uruler
+\textbf{Newton-type methods}
+\itemizebegin
+\item Newton's method: $v_k = -\nabla^2 f_0(x_k)^{-1} \nabla f_0(x_k)$
+\item Interpretation: Minimizing second order approximation: $\min_x f_0(x_k) + \nabla f_0(x_k)^\top x + \frac{1}{2} x^\top \nabla^2 f_0(x_k) x$
+\item Quasi-Newton and variable-metric: $v_k = -H_k \nabla f_0(x_k)$
+\item Combined with any step size rule
+\itemizeend
+
+% --------------------------------
+
+\section{Constrained Optimization Algorithms}
+\textbf{Methods}
+\itemizebegin
+\item \textbf{Projected Decent:} Use a direction $v_k$ from unconstrained algorithms and compute $x^\prime_{k+1} = x_k + s_k v_k$ and then project $x^\prime_{k+1}$ onto the feasible set.
+\item Construct an unconstrained problem that approximates the original problem.
+\itemizeend
+\uruler
+\textbf{Barrier method}
+\itemizebegin
+\item Consider the problem $\min_x f_0(x)$ subject to $f_i(x) \le 0$ for $i = 1...m$.
+\item Define the approximate problem for some parameter $t \ge 0$: $\min_x f_0(x) + \frac{1}{t}\phi (x)$, where the barrier function $\phi (x)$ tends to $\infty$ as $x$ tends to the boundary of the feasible set from inside.
+\item We can use the logarithmic barrier function: $\phi (x) = -\sum_{i=1}^{m}{log(-f_i(x))}$
+\item If $f_0$, $f_i$ are convex, the approximated problem is convex
+\item The KKT condition is $t \nabla f_0(x) + \sum_{i=1}^{m}{\frac{1}{-f_i(x)} \nabla f_i(x)} = 0$
+\item The approximation error: $0 \le f_0(x^*(t)) - p^* \le \frac{m}{t}$
+\itemizeend
+
+\section{Machine Learning}
+\textbf{Linear Model}
+\itemizebegin
+\item Linear model: $y(x) = w^\top \phi (x) + e(x)$, where $\phi(x)$ is a feature map and $e(x)$ is a random error
+\item Least square: $\hat{w} \in \argmin_w \sum_i{(w^\top \phi(x_i) - y_i)^2}$
+\item Quantile for $\alpha \in [0, 1)$: $\hat{w} \in \argmin_w \frac{1}{m(1 - \alpha)} \sum_i{max\{0, w^\top \phi(x_i) - y_i\}} - \frac{1}{m} \sum_i{w^\top \phi(x_i) - y_i}$. Still a linear program.
+\itemizeend
+\uruler
+\textbf{Support Vector Machine}
+\itemizebegin
+\item Classification rule: $\hat{y}(x)=sign(\phi(x)^\top x)$
+\item Convex error function(hinge): $\max \{0, 1-\alpha \}$
+\item Objective: $\min_w \frac{1}{m} \sum_i{\max\{0, 1-y_i \phi(x_i)^\top w\}} $
+\item We can add $L_1$ or $L_2$ norm regularization on $w$
+\itemizeend
+\uruler
+\textbf{Logistic Regression}
+\itemizebegin
+\item Variant of SVM with another loss function: $\min_w \frac{1}{m} \sum_i{log[1 + exp(-y_i \phi(x_i)^\top w)]}$
+\item Interpretation: $P\{Y = y | X = x\} = \frac{1}{1 + exp(-y \phi(x)^\top w)}$
+\itemizeend
+\columnbreak
+
+\textbf{Fisher discrimination}
+\itemizebegin
+\item Idea: find a direction in $\R^n$, such that the projection of data points onto the direction results in those points with positive label are from those with negative label
+\item Define $A_+ \in R^{n,m_+}$ is the matrix whose column cosists of $x_i$ such that $y_i = 1$, and $A_-$ similarly for negive labeled points. The centered(mean subtracted) data matrices are
+$\widetilde{A}_{\pm} = A_{\pm} (I_{m_{\pm}} - \frac{1}{m_{\pm}}\mathbf{1} \mathbf{1}^\top)$
+\item The mean-squared variation of the data projected on $u$ around its centroid is:
+$u^\top M u = u^\top (\frac{1}{m_-} \widetilde{A}_- \widetilde{A}_-^\top + \frac{1}{m_+} \widetilde{A}_+ \widetilde{A}_+^\top )u$
+\item The goal is: $\max_{u \ne 0} \frac{(u^\top c)^2}{u^\top M u} = \min u^\top M u$ subject to $u^\top c = 1$
+\item The problem is convex, hence KKT condition implies: $u = \frac{1}{c^\top M^{-1} c} M^{-1} c$
+\itemizeend
+\uruler
+\textbf{SPCA and NNMF}
+\itemizebegin
+\item The original PCA problem: $\max_z z^\top \widetilde{X}\widetilde{X}^\top z $ s.t. $\|z\|_2=1$
+\item In sparse PCA, we add constraint $card(z) \le k$
+\item The problem leads to the rank 1 approximation problem: $\min_{p,q} \|X - p q^\top \|_F$ s.t.
+$card(p) \le k, card(q) \le h$
+\item One example of rank 1 approximation is: $\min_{p \ge 0,q \ge 0} \|X - p q^\top \|_F$ s.t.
+$card(p) \le k, card(q) \le h$. A standard solution is coordinate descent.
+\itemizeend
+
+\section{Finance}
+\textbf{Mean-Variance (Markowitz) Models}
+\itemizebegin
+\item $x \in \R^n$ is the wealth allocation in n groups, $r$ is the random vector of unit wealth return for each group. $\hat{r} = E[r], \Sigma = Cov(r)$
+\item Hence, $\hat{r}^\top x$ is the expected return and $x^\top \Sigma x$ is the variance of the portfolio.
+\item The problems are usually maximize return with variance constraints and minimize variance, with return constraints.
+\item Buget constraint: $x^\top \mathbf{1} \le b$, no short-selling: $x \ge 0$
+\item Sector bounds: $\sum_{i \in S}{x_i} \le \alpha x^\top \mathbf{1}$ for some $\alpha \in (0, 1)$ and sector $S$.
+\item Diversification: sum of $k$ largest $x_i$ must not exceed $\eta x^\top \mathbf{1}$ for $\eta \in (0, 1)$.
+This is equivalent to $kt + s^\top \mathbf{1} \le \eta x^\top \mathbf{1}$, $s \ge 0, x - t\mathbf{1} \le s$ where $t \in \R$ and $s \in \R^n$ are additional variables.
+\item The Sharpe Ratio of a portfolio is $(\hat{r}^\top x - r_f) / \sqrt{x^\top \Sigma x}$, where $r_f$ is the
+return of a risk-free asset.
+\item If $\hat{r}^\top x > r_f$ and $\Sigma \succ 0$, then the portfolio that maximizes SR corresponds to a
+point on the efficient frontier. Max SR can be formulated as SOCP.
+\itemizeend
+\uruler
+\textbf{Value at Risk}
+
+
+
+
+
+\end{multicols*}
+\end{document}
