@@ -157,7 +157,49 @@ return of a risk-free asset.
 point on the efficient frontier. Max SR can be formulated as SOCP.
 \itemizeend
 \uruler
-\textbf{Value at Risk}
+\textbf{Value at Risk and Conditional Value at Risk}
+\itemizebegin
+\item The value-of-risk of a portfolio $r^\top x$ at probability level $\alpha \in (0, 1)$ is defined as
+$VaR_{\alpha}(r^\top x) = -F^{-1}(\alpha)$, where $F$ is the CDF of $r^\top x$.
+\item If $r$ is Gaussian with mean $\hat{r}$ and covariance $\Sigma$, we have $VaR_{\alpha}(r^\top x) \le \gamma$ is equvalent as SOC constraint $\Phi^{-1}(1-\alpha)\|\Sigma^{\frac{1}{2}}\|_2 \le \gamma + \hat{r}^\top x$
+\itemizeend
+
+\columnbreak
+% --------------------------
+% TODO: Add more finance
+
+\section{Epi-Spline Curve Fitting}
+\textbf{Epi-splines}
+\itemizebegin
+\item Epi-spline: Left continous, piece-wise polynomial
+\item On the $k^{th}$ segment, $q^{k}(x) = \sum_{i=0}^{p}{a_i^k x^i}$. Hence if we split the domain into $N$ segments with degree $p$ polynomial, our total number of parameters would be $N (p+1)$
+\item Continuity constraint: Let $m_1 ... m_{N-1}$ be the mesh points, we have $q^k(m_k) = q^{k+1}(m_k)$ for $k = 1...N-1$.
+\item Continuous differentiability: Continuty constraint plus $(q^k(m_k))^\prime = (q^{k+1}(m_k))^\prime$ for $k = 1...N-1$.
+\item Fixed values: $q^{k}(x) = s(k)$
+\item Monotonicity (non-increasing): $(q^k(x))^\prime \le 0$ for $x \in (m_{k-1}, m_k)$, and
+$q^k(m_k) \ge q^{k+1}(m_{k+1})$. The second requirement is satisfied with continuity.
+\item Convexity: Continuty constraint and $(q^k(x))^{\prime\prime} \ge 0$, $(q^k(m_k))^\prime \le (q^{k+1}(m_{k+1}))^\prime$ for $k = 1...N-1$.
+\item All constraints above are linear.
+\itemizeend
+
+\section{Optimization in Control}
+\textbf{Continuous LTI Systems}
+\itemizebegin
+\item A continuous LTI system is described by a system ODEs: $\dot{x}(t) = A x(t) + B u(t)$, $y(t) = C x(t)$
+\item The solution is: $x(t) = e^{A(t - t_0)}x(t_0) + \int_{t_0}^{t}{e^{A(t-\tau)} B u(\tau) d \tau}$,
+$t \ge t_0$
+\itemizeend
+\uruler
+\textbf{Discrete-time LTI System and Discretization}
+\itemizebegin
+\item We discretize the time interval $t = k\Delta$ for $k = ... -1, 0, 1, ...$ and DTLTI system can be described as $x(k+1) = A x(k) + B u(k), y(k) = C x(k)$
+\item The solution is: $x(k) = A^{k-k_0} x(k_0) + \sum_{i=k_0}^{k-1}{A^{k-i-1} B u(i)}$ for $k >= k_0$.
+\item Assuming constant control input during one time interval, i.e. $u(t) = u(k\Delta), \forall t \in [k\Delta, (k+1)\Delta)$, we can discretize a CTLTI system by letting $A_{\Delta}=e^{A\Delta}, B_{\Delta}=\int_0^{\Delta}{e^{A\tau}d\tau}$. The we get the system $x(k+1) = A_{\Delta} x(k) + B_{\Delta} u(k)$
+\itemizeend
+\uruler
+\textbf{Optimization-based Control Synthesis}
+
+
 
 
 
