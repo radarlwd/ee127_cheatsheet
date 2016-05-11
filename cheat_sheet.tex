@@ -83,7 +83,7 @@ than $f_0(x_k)$.
 \section{Constrained Optimization Algorithms}
 \textbf{Methods}
 \itemizebegin
-\item \textbf{Projected Decent:} Use a direction $v_k$ from unconstrained algorithms and compute $x^\prime_{k+1} = x_k + s_k v_k$ and then project $x^\prime_{k+1}$ onto the feasible set.
+\item \textbf{Projected Descent:} Use a direction $v_k$ from unconstrained algorithms and compute $x^\prime_{k+1} = x_k + s_k v_k$ and then project $x^\prime_{k+1}$ onto the feasible set.
 \item Construct an unconstrained problem that approximates the original problem.
 \itemizeend
 \uruler
@@ -161,24 +161,32 @@ point on the efficient frontier. Max SR can be formulated as SOCP.
 \itemizebegin
 \item The value-of-risk of a portfolio $r^\top x$ at probability level $\alpha \in (0, 1)$ is defined as
 $VaR_{\alpha}(r^\top x) = -F^{-1}(\alpha)$, where $F$ is the CDF of $r^\top x$.
+\item With probability no smaller that $1-\alpha$, the investor is guaranteed to receive a return higher than $-VaR_\alpha$
 \item If $r$ is Gaussian with mean $\hat{r}$ and covariance $\Sigma$, we have $VaR_{\alpha}(r^\top x) \le \gamma$ is equvalent as SOC constraint $\Phi^{-1}(1-\alpha)\|\Sigma^{\frac{1}{2}}\|_2 \le \gamma + \hat{r}^\top x$
+\item The conditional value at risk is the average of outcomes that are more extreme than $VaR_\alpha$
 \itemizeend
+
 
 \columnbreak
 % --------------------------
-% TODO: Add more finance
+\textbf{Capital Asset Pricing Model}
+\itemizebegin
+\item The CAPM says that the expected return should be
+$E[r_i] = r_f + \beta_i (E[r_m] - r_f)$, where $r_f$ is the return of a risk-free asset, $r_m$ is the random return of the market and the systematic risk $\beta_i = Cov(r_i, r_m) / Var(r_m)$
+\itemizeend
+
 
 \section{Epi-Spline Curve Fitting}
 \textbf{Epi-splines}
 \itemizebegin
-\item Epi-spline: Left continous, piece-wise polynomial
+\item Epi-spline: Left continuous, piece-wise polynomial
 \item On the $k^{th}$ segment, $q^{k}(x) = \sum_{i=0}^{p}{a_i^k x^i}$. Hence if we split the domain into $N$ segments with degree $p$ polynomial, our total number of parameters would be $N (p+1)$
 \item Continuity constraint: Let $m_1 ... m_{N-1}$ be the mesh points, we have $q^k(m_k) = q^{k+1}(m_k)$ for $k = 1...N-1$.
-\item Continuous differentiability: Continuty constraint plus $(q^k(m_k))^\prime = (q^{k+1}(m_k))^\prime$ for $k = 1...N-1$.
+\item Continuous differentiability: Continuity constraint plus $(q^k(m_k))^\prime = (q^{k+1}(m_k))^\prime$ for $k = 1...N-1$.
 \item Fixed values: $q^{k}(x) = s(k)$
 \item Monotonicity (non-increasing): $(q^k(x))^\prime \le 0$ for $x \in (m_{k-1}, m_k)$, and
 $q^k(m_k) \ge q^{k+1}(m_{k+1})$. The second requirement is satisfied with continuity.
-\item Convexity: Continuty constraint and $(q^k(x))^{\prime\prime} \ge 0$, $(q^k(m_k))^\prime \le (q^{k+1}(m_{k+1}))^\prime$ for $k = 1...N-1$.
+\item Convexity: Continuity constraint and $(q^k(x))^{\prime\prime} \ge 0$, $(q^k(m_k))^\prime \le (q^{k+1}(m_{k+1}))^\prime$ for $k = 1...N-1$.
 \item All constraints above are linear.
 \itemizeend
 
@@ -197,9 +205,81 @@ $t \ge t_0$
 \item Assuming constant control input during one time interval, i.e. $u(t) = u(k\Delta), \forall t \in [k\Delta, (k+1)\Delta)$, we can discretize a CTLTI system by letting $A_{\Delta}=e^{A\Delta}, B_{\Delta}=\int_0^{\Delta}{e^{A\tau}d\tau}$. The we get the system $x(k+1) = A_{\Delta} x(k) + B_{\Delta} u(k)$
 \itemizeend
 \uruler
+
 \textbf{Optimization-based Control Synthesis}
+\itemizebegin
+\item Consider a generic DTLTI system, with a scalar input signal $u(k)$ and scalar
+output signal $y(k)$ (SISO)
+\item Given $x(0) = x_0$, determinte control sequence $u(k), k = 0,... T-1$ such that $x(T) = x_T$
+\item $x(T) = A^\top x_0 + \sum_{i=0}^{T-1}{A^{T - i - 1} B u(i)}
+= A^\top x_0 + [A^{T-1}B, A^{T-2}B ... AB, B][u(0), u(1) ... u(T - 1)]^\top
+= A^\top x_0 + R_T \mu_T$ where $R_T = [A^{T-1}B ... B]$
+\item Define $\xi_T = x_T - A^\top x_0$, the optimization problem becomes finding a vector $\mu_T \in \R^T$
+such that $R_T \mu_T = \xi_T$.
+\item We assume that $T > n$ and that $R_T$ is full row rank, then the problem admits an infinite number of possible solutions. We want to choose the one with minimum effort.
+\item Mimimizing energy: $\min_{\mu_T} \|\mu_T\|_2^2$ s.t. $R_T \mu_T = \xi_T$, the solution is $R_T^\top (R_T R_T^\top)^{-1} \xi_T$
+\item Minimum fuel control: $\min_{\mu_T} \|\mu_T\|_1$ s.t. $R_T \mu_T = \xi_T$. The problem can be formulated as LP.
+\itemizeend
 
+\columnbreak
+\textbf{Control Synthesis for Trajectory Tracking}
+\itemizebegin
+\item Finding a control sequence such that the output $y(k)$ tracks as closely as possible an assigned reference trajectory $y_{ref}(k)$
+\item We assume SISO, $x(0) = 0$ and $y_{ref}(0) = 0$, then we get
+$x(k) = A^{k-1} B u(0) + ... + ABu(k-2) + Bu(k-1)$
+\item The output sequence $y(k) = Cx(k) = CA^{k-1} B u(0) + ... + CABu(k-2) + CBu(k-1)$ for $k = 1,...,T$
+\item Rewrite in matrix form, we have
+\[
+\begin{bmatrix}
+y(1)\\
+y(2)\\
+\vdots \\
+y(T)
+\end{bmatrix}
+=
+\begin{bmatrix}
+CB & 0 & \dots & 0 \\
+CAB & CB & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+CA^{T-1}B & \dots & CAB & CB
+\end{bmatrix}
+\begin{bmatrix}
+u(0)\\
+u(1)\\
+\vdots \\
+u(T-1)
+\end{bmatrix}
+\]that is
+$y_T = \Phi_T \mu_T$
 
+\item Define $\mathcal{Y}_{ref} = [y_{ref}(1), \dots, y_{ref}(T)]^\top$. The problem now becomes $\min_{\mu_T} \| \Phi_T \mu_T - \mathcal{Y}_{ref} \|_2^2$
+\item We can also add a $L_2$ norm or instantaneous rate of variation of $\mu_T$ to penalize energy output.
+\itemizeend
+
+\uruler
+\textbf{Continuous-time Lyapunov Stability Analysis}
+\itemizebegin
+\item The CTLTI system $\dot{x}(t) = A x(t) + B u(t)$ is said to be (asymptotically) stable if,
+for $u(t) = 0$, it holds that $\lim_{t\to\infty}x(t) = 0, \forall x(0) = x_0$
+\item A necessary condition is the existance of a quadratic Lyapunov function
+$V(x) = x^\top P x \succ 0$ such that $\dot{V}(x) = x^\top (A^\top P + PA) x \prec 0$. The condition is equivalent to $\exists P \succ 0$ such that $A^\top P + PA \prec 0$.
+\item We can reformulate the strict LMIs into non-strict LMIs:
+$\exists W \succeq I$ such that $WA^\top + AW \preceq -I$.
+\item Then we can use optimization technique to find $P$: $\min_{W, v} v$ subject to $WA^\top + AW \preceq -I$, $I \preceq W \preceq vI$
+\itemizeend
+\textbf{Stabilizing State-feedback Design}
+\itemizebegin
+\item Assume that the control input takes the following state-feedback form: $u(t) = Kx(t)$ where $K$ is the state-feedback gain matrix.
+\item We have the controlled system: $\dot{x}(t) = (A + BK)x(t)$
+\item The stability condition is: $\exists W \succeq 0, WA^\top + AW + (KW)^\top B^\top + B(KW) \preceq -I$
+\item Define $Y=KW$, the condition becomes $\exists W \succeq 0, WA^\top + AW + Y^\top B^\top + BY \preceq -I$
+\item Then we can solve: $\min_{W, Y, v} v + \eta \|Y\|_2$ subject to $WA^\top + AW + Y^\top B^\top + BY \preceq -I, I \preceq W \preceq vI$
+\itemizeend
+\uruler
+\textbf{Robust Feedback Design}
+\itemizebegin
+\item Consider the system $\dot{x}(t) = A x(t) + B u(t)$, where now the 
+\itemizeend
 
 
 
