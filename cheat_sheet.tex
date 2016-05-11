@@ -271,14 +271,21 @@ $\exists W \succeq I$ such that $WA^\top + AW \preceq -I$.
 \itemizebegin
 \item Assume that the control input takes the following state-feedback form: $u(t) = Kx(t)$ where $K$ is the state-feedback gain matrix.
 \item We have the controlled system: $\dot{x}(t) = (A + BK)x(t)$
-\item The stability condition is: $\exists W \succeq 0, WA^\top + AW + (KW)^\top B^\top + B(KW) \preceq -I$
-\item Define $Y=KW$, the condition becomes $\exists W \succeq 0, WA^\top + AW + Y^\top B^\top + BY \preceq -I$
-\item Then we can solve: $\min_{W, Y, v} v + \eta \|Y\|_2$ subject to $WA^\top + AW + Y^\top B^\top + BY \preceq -I, I \preceq W \preceq vI$
+\item The stability condition is: $\exists W \succ 0, WA^\top + AW + (KW)^\top B^\top + B(KW) \prec -I$
+\item Define $Y=KW$, the condition becomes $\exists W \succ 0, WA^\top + AW + Y^\top B^\top + BY \prec -I$
+\item Then we can solve: $\min_{W, Y, v} v + \eta \|Y\|_2$ subject to $WA^\top + AW + Y^\top B^\top + BY \prec -I, I \preceq W \preceq vI$ and then recover $K$ as $K = YW^{-1}$. $\eta \ge 0$ is the trade off parameter.
 \itemizeend
 \uruler
 \textbf{Robust Feedback Design}
 \itemizebegin
-\item Consider the system $\dot{x}(t) = A x(t) + B u(t)$, where now the 
+\item Consider the system $\dot{x}(t) = A x(t) + B u(t)$, where now the matrices $A, B$ can vary inside a polytope of given matrices	$(A_i, B_i), i=1,\dots,N$. That is $(A(t), B(t)) \in co\{(A_1, B_1), \dots, (A_N, B_N)\}$.
+\item A sufficient condition for stability of the uncertain system is the existence of a common quadratic Lyapunov function for all the vertex systems, that is $\exists W \succ I: WA_i^\top + A_iW \prec -I, i = 1,\dots,N$
+\item Based on this condition, we can build a controller.
+\item The controlled system is described by $\dot{x}(t) = (A + BK)x(t)$.
+It is stable if $\exists W \succ I: W(A_i + B_iK)^\top + (A_i + B_iK)W \prec -I, i = 1,\dots,N$
+\item Introducing the variable $Y=KW$, the feedback gain matrix $K$ of a stabilizing
+controller can be found by solving the following problem. $\min_{W, Y, v} v + \eta \| Y \|_2$ subject to
+$WA_i^\top + A_iW + Y^\top B_i^\top + B_i Y \prec -I, i = 1,\dots,N$, $I \preceq W \preceq vI$, and then recover $K$ as $K = YW^{-1}$
 \itemizeend
 
 
